@@ -45,13 +45,15 @@ const Home = (): JSX.Element => {
   }, []);
 
   function handleAddProduct(id: number) {
-    console.log('item id: ' + id);
+    if (id > 0 ) {
+      addProduct(id);
+    }
   }
 
   return (
     <ProductList>
       {products.map(product => (
-        <li>
+        <li key={product.id}>
           <img src={ product.image } alt={ product.title } />
           <strong>{ product.title }</strong>
           <span>{ product.priceFormatted }</span>

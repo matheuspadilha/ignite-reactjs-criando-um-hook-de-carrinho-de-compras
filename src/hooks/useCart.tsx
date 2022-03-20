@@ -34,7 +34,18 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const addProduct = async (productId: number) => {
     try {
-      // TODO
+      const stockInfo: Stock = await api.get(`stock/${productId}`)
+          .then(response => response.data);
+
+      if (stockInfo.amount > 0) {
+        const product: Product = await api.get(`products/${productId}`)
+            .then(response => response.data);
+
+        setCart([...cart, product]);
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart));
+      } else {
+        console.log("Nao possui stock");
+      }
     } catch {
       // TODO
     }
@@ -42,7 +53,16 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const removeProduct = (productId: number) => {
     try {
-      // TODO
+      let existsInTheCart = cart.find(product => (product.id === productId));
+
+      if (existsInTheCart) {
+        const products: Product[] = cart.filter( product => product.id !== productId ?? product );
+
+        setCart(products);
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart));
+      } else {
+        console.log("Produto não esta no carrinho");
+      }
     } catch {
       // TODO
     }
