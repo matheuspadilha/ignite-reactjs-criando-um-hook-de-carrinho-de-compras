@@ -43,17 +43,18 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
         setCart([...cart, product]);
         localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart));
+        // todo: Caso o produto já exista no carrinho, não se deve adicionar um novo produto repetido, apenas incrementar em 1 unidade a quantidade;
       } else {
-        console.log("Nao possui stock");
+        toast.error('Quantidade solicitada fora de estoque' );
       }
     } catch {
-      // TODO
+      toast.error('Erro na adição do produto' );
     }
   };
 
   const removeProduct = (productId: number) => {
     try {
-      let existsInTheCart = cart.find(product => (product.id === productId));
+      let existsInTheCart = cart.find( product => ( product.id === productId ) );
 
       if (existsInTheCart) {
         const products: Product[] = cart.filter( product => product.id !== productId ?? product );
@@ -61,10 +62,10 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
         setCart(products);
         localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart));
       } else {
-        console.log("Produto não esta no carrinho");
+        toast.error('Erro na remoção do produto');
       }
     } catch {
-      // TODO
+      toast.error('Erro na remoção do produto');
     }
   };
 
@@ -75,7 +76,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     try {
       // TODO
     } catch {
-      // TODO
+      toast.error('Erro na alteração de quantidade do produto');
     }
   };
 
@@ -83,13 +84,13 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     <CartContext.Provider
       value={{ cart, addProduct, removeProduct, updateProductAmount }}
     >
-      {children}
+      { children }
     </CartContext.Provider>
   );
 }
 
 export function useCart(): CartContextData {
-  const context = useContext(CartContext);
+  const context = useContext( CartContext );
 
   return context;
 }
