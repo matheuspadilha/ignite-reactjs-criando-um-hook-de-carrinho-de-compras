@@ -34,19 +34,36 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const addProduct = async (productId: number) => {
     try {
+      const updateCart = [...cart];
+      const existsProduct = updateCart.find(p => p.id === productId);
+
       const stockInfo: Stock = await api.get(`stock/${productId}`)
           .then(response => response.data);
 
-      if (stockInfo.amount > 0) {
+      const currentAmount = existsProduct ? existsProduct.amount : 0;
+      const amount = currentAmount + 1;
+
+      if (amount > stockInfo.amount) {
+        toast.error('Quantidade solicitada fora de estoque' );
+        return;
+      }
+
+      if (existsProduct) {
+        existsProduct.amount = amount;
+      } else {
         const product: Product = await api.get(`products/${productId}`)
             .then(response => response.data);
 
-        setCart([...cart, product]);
-        localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart));
-        // todo: Caso o produto já exista no carrinho, não se deve adicionar um novo produto repetido, apenas incrementar em 1 unidade a quantidade;
-      } else {
-        toast.error('Quantidade solicitada fora de estoque' );
+        const newProduct = {
+          ...product,
+          amount: 1
+        }
+
+        updateCart.push(newProduct);
       }
+
+      setCart(updateCart);
+      localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart));
     } catch {
       toast.error('Erro na adição do produto' );
     }
