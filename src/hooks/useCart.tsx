@@ -63,7 +63,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       }
 
       setCart(updateCart);
-      localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart));
+      localStorage.setItem('@RocketShoes:cart', JSON.stringify(updateCart));
     } catch {
       toast.error('Erro na adição do produto' );
     }
@@ -71,15 +71,15 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const removeProduct = (productId: number) => {
     try {
-      let existsInTheCart = cart.find( product => ( product.id === productId ) );
+      const updatedCart = [...cart];
+      const productIndex = updatedCart.findIndex(product => product.id === productId);
 
-      if (existsInTheCart) {
-        const products: Product[] = cart.filter( product => product.id !== productId ?? product );
-
-        setCart(products);
-        localStorage.setItem('@RocketShoes:cart', JSON.stringify(cart));
+      if (productIndex >= 0){
+        updatedCart.splice(productIndex, 1);
+        setCart(updatedCart);
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart));
       } else {
-        toast.error('Erro na remoção do produto');
+        throw Error();
       }
     } catch {
       toast.error('Erro na remoção do produto');
@@ -91,7 +91,30 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
-      // TODO
+      if (amount <= 0) {
+        return;
+      }
+
+      const stock = await api.get(`stock/${productId}`);
+
+      const stockAmount = stock.data.amount;
+
+      if (amount > stockAmount) {
+        toast.error('Quantidade solicitada fora de estoque');
+        return;
+      }
+
+      const updatedCart = [...cart];
+      const productExists = updatedCart.find(product => product.id === productId);
+
+      if (productExists) {
+        productExists.amount = amount;
+        setCart(updatedCart);
+        localStorage.setItem('@RocketShoes:cart', JSON.stringify(updatedCart));
+      } else {
+        throw Error();
+      }
+
     } catch {
       toast.error('Erro na alteração de quantidade do produto');
     }
